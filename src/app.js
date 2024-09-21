@@ -17,7 +17,7 @@ const corsOptions = {
 
 // middlewares
 app.use(bodyParser.json());
-app.use(cors(corsOptions));
+app.use(cors());
 
 // routes
 app.use("/api/users", userRouter);

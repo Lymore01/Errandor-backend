@@ -2,8 +2,23 @@ POST http://localhost:3000/api/users/register-user
 Content-Type: application/json
 
 {
-    "firstName": "Kelly",
+    "firstName": "bev",
     "lastName": "Limo",
-    "email": "kellylimo@gmail.com",
-    "password":"genlim@1234"
+    "email": "bevlimo@gmail.com",
+    "password":"genbev@1234"
 }
+
+###
+POST http://localhost:3000/api/users/login-user
+Content-Type: application/json
+
+{
+    "email": "bevlimo@gmail.com",
+    "password":"genbev@1234"
+}
+
+###
+GET http://localhost:3000/api/users/name
+Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmVlZDhmODEwNWU1ZDgwMWI2MjIzNDEiLCJpYXQiOjE3MjY5MjkxNjMsImV4cCI6MTcyNjkzMDk2M30.-GZPlEp_R1V4Fp_yPdMAEkP3YZPkukSkI6upBkEPLes
+
+

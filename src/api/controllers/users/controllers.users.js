@@ -1,6 +1,6 @@
 const usersModel = require("../../../models/models.users");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 
 exports.registerUser = async (req, res) => {
   try {
@@ -33,11 +33,18 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    // find if user is in the db
-    const user = await usersModel.findOne({ email: email, password: password });
+    const user = await usersModel.findOne({ email });
     if (!user) {
-      res.status(500).json({ message: "Incorrect username or password" });
+      return res
+        .status(500)
+        .json({ message: "Incorrect username or password" });
     }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Incorrect email or password" });
+    }
+    
     const accessToken = jwt.sign(
       { userId: user._id },
       process.env.JWT_ACCESS_TOKEN,
@@ -47,17 +54,20 @@ exports.loginUser = async (req, res) => {
       { userId: user._id },
       process.env.JWT_ACCESS_TOKEN
     );
-    res.json(200).json({
+    res.status(200).json({
       message: "User Logged in successfully!",
       AccessToken: accessToken,
       RefreshToken: refreshToken,
     });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: `Error Logging in user: ${error.message}` });
+    res.status(400).json({ message: `Error Logging in user: ${error}` });
   }
 };
 
+exports.getUser = async (req, res) => {
+  const user_id = req.user.userId
+  const user = await usersModel.findById(user_id)
+  res.json({ message:"hello", userData: user })
+}
 
 // crypto.randomUUID(64).toString('hex')
