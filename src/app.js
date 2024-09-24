@@ -7,6 +7,7 @@ var colors = require("colors/safe");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const userRouter = require("../src/api/routes/users/routes.users");
+const errandRouter = require("../src/api/routes/errands/routes.errands");
 const PORT = process.env.PORT;
 
 const app = express();
@@ -21,6 +22,7 @@ app.use(cors());
 
 // routes
 app.use("/api/users", userRouter);
+app.use("/api/errands", errandRouter);
 
 const startServer = () => {
   app.listen(PORT, () => {
