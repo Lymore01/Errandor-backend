@@ -1,5 +1,12 @@
-const mongoose = require("mongoose");
 const errandModel = require("../../../models/models.errands");
+const findSocketByUserId = require("../../../utils/findSocketByUserId");
+const app = require("../../../app");
+const http = require("http");
+const server = http.createServer(app);
+
+const { Server } = require("socket.io");
+
+const io = new Server(server);
 
 exports.postErrand = async (req, res) => {
   try {
@@ -100,6 +107,7 @@ exports.updateErrandById = async (req, res) => {
       return res.status(400).json({ message: "Please provide errand id" });
     }
     const updatedErrand = {
+      belongsTo: req.user._id,
       errandName: req.body.errandName,
       errandImage: req.body.errandImage,
       description: req.body.description,
@@ -131,3 +139,67 @@ exports.updateErrandById = async (req, res) => {
       .json({ message: `Error updating errand ${errandId}: ${error.message}` });
   }
 };
+
+exports.claimErrand = async () => {
+  const errandId = req.params.id;
+  try {
+    if (!errandId) {
+      return res.status(400).json({ message: "Please provide errand id" });
+    }
+
+    const updatedErrand = await errandModel.findOneAndUpdate(
+      {
+        _id: errandId,
+      },
+      { $push: { claimedErrandor: req.user._id } },
+      { new: true, useFindAndModify: false }
+    );
+
+    if (!updatedErrand) {
+      return res.json({ message: "Errand not found!" });
+    }
+
+    const ownerId = updatedErrand.belongsTo;
+
+    const ownerSocket = findSocketByUserId(ownerId);
+
+    if (ownerSocket) {
+      const message = `Your errand has been claimed by user ${userId}`;
+      io.to(ownerSocket.id).emit("notification", { message });
+    }
+
+    io.on("connection", (socket) => {
+      socket.on("status", async ({ status, user }) => {
+        await errandModel.findOneAndUpdate(
+          {
+            _id: errandId,
+          },
+          {
+            $set: {
+              status: status,
+              approvedErrandor: user,
+            },
+          },
+          {
+            new: true,
+          }
+        );
+        io.to(ownerSocket.user).emit(
+          "notification",
+          `Errand ${errandId} ${status}`
+        );
+      });
+    });
+
+    res.status(200).json({
+      message: `Errand ${errandId} claimed successfully!`,
+      data: updated,
+    });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: `Error claiming errand ${errandId}: ${error.message}` });
+  }
+};
+
+// TODO: Solve the circular dependency error

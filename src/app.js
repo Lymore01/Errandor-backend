@@ -5,16 +5,28 @@ const db = require("./config/config.db");
 const express = require("express");
 var colors = require("colors/safe");
 const cors = require("cors");
+const http = require("http");
 const bodyParser = require("body-parser");
 const userRouter = require("../src/api/routes/users/routes.users");
 const errandRouter = require("../src/api/routes/errands/routes.errands");
+const { Server } = require("socket.io");
 const PORT = process.env.PORT;
 
 const app = express();
+const server = http.createServer(app);
 
-const corsOptions = {
-  origin: "http://localhost:5173",
-};
+const io = new Server(server);
+
+// no need
+io.on("connection", (socket) => {
+  console.log(colors.cyan("User connected!"));
+  socket.on("register", (userId) => {
+    socket.userId = userId;
+  });
+  socket.on("disconnect", () => {
+    console.log(`User with socket ID ${socket.id} disconnected`);
+  });
+});
 
 // middlewares
 app.use(bodyParser.json());
@@ -56,3 +68,4 @@ db.on("error", (err) => {
 });
 
 process.on("SIGINT", gracefulShutdown).on("SIGTERM", gracefulShutdown);
+module.exports = app;
