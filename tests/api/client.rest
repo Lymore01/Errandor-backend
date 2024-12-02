@@ -1,11 +1,25 @@
+@admin_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzQ5NjExOWY4ODEzMmVmYjQ1MmZmZDQiLCJpYXQiOjE3MzI4Njg4NzYsImV4cCI6MTczMjg3MDY3Nn0.HrfbLznyVvBfWxL-standsOXDQmL587uX4iVJRGUx-A
+@user_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzQ5NzBmNTJlZjc2OGJmNDBhYWVlYWMiLCJpYXQiOjE3MzI4Njg4OTEsImV4cCI6MTczMjg3MDY5MX0.8xFD1VllW6fYdGP3LggLz9Ek6VdECOkLh7iVUghVwAA
+@errand_id=674976f2129b5fc2eb00bfa6
+@errand_idtwo=67497a97443f9f0990026b06
+###
 POST http://localhost:3000/api/users/register-user
 Content-Type: application/json
 
 {
-    "firstName": "bev",
+    "firstName": "Bev",
     "lastName": "Limo",
     "email": "bevlimo@gmail.com",
     "password":"genbev@1234"
+}
+
+###
+POST http://localhost:3000/api/users/login-user
+Content-Type: application/json
+
+{
+    "email": "kellylimo@gmail.com",
+    "password":"genkelly@1234"
 }
 
 ###
@@ -18,51 +32,123 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3000/api/users/name
-Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmVlZDhmODEwNWU1ZDgwMWI2MjIzNDEiLCJpYXQiOjE3MjY5OTk1NTAsImV4cCI6MTcyNzAwMTM1MH0.e5J745mdLsOtaVQIA4qhdRxrvyw7maxMHo5JLTXKfzg
+DELETE http://localhost:3000/api/errands/delete/errand/{{errand_id}}
 
+### Login to get token
+POST http://localhost:3000/api/users/login-user
+Content-Type: application/json
 
+{
+    "email": "your@email.com",
+    "password": "yourpassword"
+}
 ###
+GET http://localhost:3000/api/dashboard
+Authorization:Bearer {{user_token}}
+### Get all errands (with authentication)
+GET http://localhost:3000/api/errands/all
+Authorization:Bearer {{admin_token}}
+### Create new errand (with auth)
 POST http://localhost:3000/api/errands/create-errand
 Content-Type: application/json
+Authorization:Bearer {{admin_token}}
 
 {
-  "errandName": "Grocery Pickup",
-  "errandImage": "https://example.com/images/grocery-pickup.png",
-  "description": "Pick up groceries from the supermarket and deliver to my home.",
-  "county": "Nairobi",
-  "subCounty": "Westlands",
-  "place": "Westgate Shopping Mall",
-  "dateTime": "2024-09-25T14:30:00",
-  "completionTime": "2024-09-25T16:00:00",
+  "errandName": "Document Delivery",
+  "errandImage": "https://example.com/images/document-delivery.png",
+  "description": "Deliver important documents to the client's office.",
+  "county": "Mombasa",
+  "subCounty": "Nyali",
+  "reward": 2000,
+  "place": "Nyali Business Center",
+  "dateTime": "2024-11-30T10:00:00",
+  "completionTime": "2024-11-30T12:00:00",
   "urgency": "High",
-  "instructions": "Get fresh vegetables and fruits, and make sure to pick the items from the provided list.",
+  "instructions": "Ensure the documents are delivered securely and get a signature upon delivery.",
   "status": "Pending"
 }
 
 ###
-GET http://localhost:3000/api/errands/all
+POST http://localhost:3000/api/errands/claim/errand/{{errand_id}}
+Authorization:Bearer {{user_token}}
 
-###
-GET http://localhost:3000/api/errands/errand/66f3122827ac9a82b8b4cab5
-
-###
-PUT http://localhost:3000/api/errands/update/errand/66f3192dd8ec02c9cf7131f3
+### Claim an errand (with auth)
+PUT http://localhost:3000/api/errands/update/errand/{{errand_idtwo}}
 Content-Type: application/json
+Authorization:Bearer {{admin_token}}
 
 {
-  "errandName": "Grocery Pickup",
-  "errandImage": "https://example.com/images/grocery-pickup.png",
-  "description": "Pick up groceries from the supermarket and deliver to my home.",
-  "county": "Nairobi",
-  "subCounty": "Kilimani",
-  "place": "Westgate Shopping Mall",
-  "dateTime": "2024-09-25T14:30:00",
-  "completionTime": "2024-09-25T16:00:00",
-  "urgency": "Medium",
-  "instructions": "Get fresh vegetables and fruits, and make sure to pick the items from the provided list.",
   "status": "Pending"
 }
-
 ###
-DELETE http://localhost:3000/api/errands/delete/errand/66f3122827ac9a82b8b4cab5
+GET http://localhost:3000/api/errands/user
+Authorization: Bearer {{user_token}}
+
+### Update errand status
+PUT http://localhost:3000/api/errands/update/errand/
+Content-Type: application/json
+Authorization: Bearer {{user_token}}
+
+{
+  "status": "In Progress"
+}
+
+### Test different status updates
+### Set to Completed
+PUT http://localhost:3000/api/errands/update/errand/{{errand_idtwo}}
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "status": "Completed"
+}
+
+### Set to Cancelled
+PUT http://localhost:3000/api/errands/update/errand/{{errand_id}}
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "status": "Cancelled"
+}
+
+### Set to Pending
+PUT http://localhost:3000/api/errands/update/errand/{{errand_id}}
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "status": "Claimed"
+}
+
+### Test invalid status (should fail)
+PUT http://localhost:3000/api/errands/update/errand/{{errand_id}}
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "status": "InvalidStatus"
+}
+
+### Get user's claimed errands
+GET http://localhost:3000/api/errands/claimed
+Authorization: Bearer {{user_token}}
+
+### Get Dashboard Data
+GET http://localhost:3000/api/dashboard
+Authorization: Bearer {{user_token}}
+
+### Approve an errand claim
+POST http://localhost:3000/api/errands/approve/errand/{{errand_id}}
+Authorization: Bearer {{admin_token}}
+
+### Get user's approved errands
+GET http://localhost:3000/api/errands/approved
+Authorization: Bearer {{user_token}}
+
+# claim -> pending -> approve -> complete
+# claim -> pending -> cancel
+
+### Get errands approved by owner
+GET http://localhost:3000/api/errands/approved-by-owner
+Authorization: Bearer {{admin_token}}

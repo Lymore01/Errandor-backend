@@ -9,15 +9,18 @@ const http = require("http");
 const bodyParser = require("body-parser");
 const userRouter = require("../src/api/routes/users/routes.users");
 const errandRouter = require("../src/api/routes/errands/routes.errands");
+const dashboardRouter = require("../src/api/routes/dashboard/routes.dashboard");
+const errorHandler = require("../src/middlewares/errorHandler");
 const { Server } = require("socket.io");
 const PORT = process.env.PORT;
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server);
 
-// no need
 io.on("connection", (socket) => {
   console.log(colors.cyan("User connected!"));
   socket.on("register", (userId) => {
@@ -32,15 +35,32 @@ io.on("connection", (socket) => {
 app.use(bodyParser.json());
 app.use(cors());
 
+// Create uploads directories if they don't exist
+const uploadsDir = path.join(__dirname, '../uploads');
+const errandsDir = path.join(uploadsDir, 'errands');
+const profilesDir = path.join(uploadsDir, 'profiles');
+
+// Ensure directories exist
+[uploadsDir, errandsDir, profilesDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// Serve static files
+app.use('/uploads', express.static(uploadsDir));
+
 // routes
 app.use("/api/users", userRouter);
 app.use("/api/errands", errandRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 const startServer = () => {
   app.listen(PORT, () => {
     console.log(colors.cyan(`App Listening on port ${PORT}...`));
   });
 };
+app.use(errorHandler);
 
 const gracefulShutdown = async () => {
   console.log(colors.yellow("Gracefully shutting down..."));
@@ -52,11 +72,10 @@ const gracefulShutdown = async () => {
   } catch (error) {
     console.log(colors.red("Error closing MongoDB connection:", error));
   } finally {
-    process.exit(0); //close without an error code
+    process.exit(0);
   }
 };
 
-// start the server only if the db connection is established
 db.once("open", () => {
   console.log(colors.green("Connected to MongoDB."));
   startServer();
@@ -64,7 +83,7 @@ db.once("open", () => {
 
 db.on("error", (err) => {
   console.error(colors.red("Failed to connect to MongoDB:", err));
-  process.exit(1); // Exit the process with an error code
+  process.exit(1); 
 });
 
 process.on("SIGINT", gracefulShutdown).on("SIGTERM", gracefulShutdown);

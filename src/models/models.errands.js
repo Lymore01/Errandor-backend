@@ -5,6 +5,7 @@ const errandSchema = new mongoose.Schema(
     belongsTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users",
+      required: true,
     },
     errandName: {
       type: String,
@@ -22,6 +23,10 @@ const errandSchema = new mongoose.Schema(
     },
     subCounty: {
       type: String,
+    },
+    reward: {
+      type: Number,
+      required: true,
     },
     place: {
       type: String,
@@ -42,7 +47,7 @@ const errandSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Pending", "Completed", "Approving", "Cancelled"],
+      enum: ["Pending", "Claimed", "Approved", "In Progress", "Completed", "Cancelled"],
       default: "Pending",
     },
     claimedErrandor: [
@@ -51,6 +56,10 @@ const errandSchema = new mongoose.Schema(
         ref: "Users",
       },
     ],
+    approvedErrandor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
   },
   {
     timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },

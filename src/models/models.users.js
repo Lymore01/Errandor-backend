@@ -20,19 +20,15 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      min: [8, 'Password must be at least 8 characters long'],
+      required: true,
     },
-    errandsClaimed: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Errands"
-    }],
-    errandsPosted:[{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Errands"
-    }]
+    profileImage: {
+      type: String,
+      default: null,
+    },
   },
   {
-    timestamps:{ createdAt: "createdAt", updatedAt: "updatedAt"}
+    timestamps: true,
   }
 );
 
